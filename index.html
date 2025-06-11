@@ -34,6 +34,9 @@
       padding: 0.5em;
       font-size: 1em;
     }
+    input[type="file"] {
+      margin-top: 0.5em;
+    }
     button {
       padding: 0.5em 1em;
       background-color: #f7cfd6;
@@ -56,6 +59,11 @@
       font-size: 0.8em;
       color: #777;
     }
+    img.uploaded {
+      max-width: 100%;
+      margin-top: 0.5em;
+      border-radius: 8px;
+    }
   </style>
 </head>
 <body>
@@ -68,83 +76,12 @@
       <h2>留言板</h2>
       <textarea id="messageInput" placeholder="寫下你想說的話..."></textarea>
       <br>
+      <input type="file" id="imageInput" accept="image/*">
+      <br>
       <button onclick="addMessage()">送出留言</button>
       <ul id="messageList"></ul>
     </section>
   </main>
 
   <!-- Firebase CDN with compat -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
-
-  <script>
-    // 密碼驗證
-    let password = sessionStorage.getItem("password");
-    if (password !== "960913") {
-      password = prompt("請輸入進入密碼：");
-      if (password === "960913") {
-        sessionStorage.setItem("password", password);
-      } else {
-        alert("密碼錯誤，請重新整理頁面再試一次。❌");
-        throw new Error("密碼錯誤");
-      }
-    }
-
-    // 暱稱設定
-    let nickname = localStorage.getItem("nickname");
-    if (!nickname) {
-      nickname = prompt("歡迎進入我們的小天地！請輸入你的暱稱：");
-      if (!nickname || nickname.trim() === "") {
-        nickname = "匿名小花";
-      }
-      localStorage.setItem("nickname", nickname);
-    }
-
-    document.querySelector("main").style.display = "block";
-
-    // Firebase 設定
-    const firebaseConfig = {
-      apiKey: "AIzaSyCDImK5HELU21qN5hNe9ggHllMH2VTd_fE",
-      authDomain: "friend-space-a4fd4.firebaseapp.com",
-      projectId: "friend-space-a4fd4",
-      storageBucket: "friend-space-a4fd4.firebasestorage.app",
-      messagingSenderId: "899183937218",
-      appId: "1:899183937218:web:7c7d4a921d12c60dd29d5b",
-      measurementId: "G-TSMTW6P42S",
-      databaseURL: "https://friend-space-a4fd4-default-rtdb.asia-southeast1.firebasedatabase.app"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const messagesRef = db.ref("messages");
-
-    function addMessage() {
-      const input = document.getElementById("messageInput");
-      if (input.value.trim() !== "") {
-        const now = new Date();
-        const timeString = now.toLocaleString("zh-TW", { hour12: false });
-        const messageData = {
-          nickname: nickname,
-          text: input.value,
-          time: timeString
-        };
-        messagesRef.push(messageData)
-          .then(() => input.value = "")
-          .catch(err => alert("留言失敗：" + err.message));
-      }
-    }
-
-    messagesRef.on("child_added", function(snapshot) {
-      const data = snapshot.val();
-      const list = document.getElementById("messageList");
-      const li = document.createElement("li");
-      li.innerHTML = `
-        <strong>${data.nickname}</strong> 說：<br>
-        ${data.text}<br>
-        <div class="meta">🕒 ${data.time}</div>
-      `;
-      list.insertBefore(li, list.firstChild);
-    });
-  </script>
-</body>
-</html>
+  <script src="https
