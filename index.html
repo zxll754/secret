@@ -83,5 +83,108 @@
     </section>
   </main>
 
-  <!-- Firebase CDN with compat -->
-  <script src="https
+  <script>
+    let password = sessionStorage.getItem("password");
+    if (password !== "960913") {
+      password = prompt("請輸入進入密碼：");
+      if (password === "960913") {
+        sessionStorage.setItem("password", password);
+      } else {
+        alert("密碼錯誤，請重新整理頁面再試一次。❌");
+        throw new Error("密碼錯誤");
+      }
+    }
+
+    let nickname = localStorage.getItem("nickname");
+    if (!nickname) {
+      nickname = prompt("歡迎進入我們的小天地！請輸入你的暱稱：");
+      if (!nickname || nickname.trim() === "") {
+        nickname = "匿名小花";
+      }
+      localStorage.setItem("nickname", nickname);
+    }
+
+    document.querySelector("main").style.display = "block";
+
+    const JSONBIN_ID = "68496c648960c979a5a80031";
+    const JSONBIN_SECRET = "$2a$10$s8owPj8J0CNAiaWhteg2uukcpYgfjQPMs7Zr4QXQU1kt4X3bxqLge";
+
+    async function fetchMessages() {
+      const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}/latest`, {
+        headers: {
+          'X-Master-Key': JSONBIN_SECRET
+        }
+      });
+      const data = await res.json();
+      renderMessages(data.record.messages || []);
+    }
+
+    async function saveMessages(messages) {
+      await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Master-Key": JSONBIN_SECRET
+        },
+        body: JSON.stringify({ messages })
+      });
+    }
+
+    function renderMessages(messages) {
+      const list = document.getElementById("messageList");
+      list.innerHTML = "";
+      messages.reverse().forEach(data => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <strong>${data.nickname}</strong> 說：<br>
+          ${data.text}<br>
+          <div class="meta">🕒 ${data.time}</div>
+          ${data.image ? `<img class="uploaded" src="${data.image}" alt="圖片">` : ""}
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    async function addMessage() {
+      const input = document.getElementById("messageInput");
+      const imageFile = document.getElementById("imageInput").files[0];
+      const now = new Date();
+      const timeString = now.toLocaleString("zh-TW", { hour12: false });
+      let imageURL = "";
+
+      if (imageFile) {
+        const reader = new FileReader();
+        reader.onloadend = async function () {
+          imageURL = reader.result;
+          await pushMessage(imageURL);
+        };
+        reader.readAsDataURL(imageFile);
+      } else {
+        await pushMessage(imageURL);
+      }
+
+      async function pushMessage(image) {
+        const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}/latest`, {
+          headers: {
+            'X-Master-Key': JSONBIN_SECRET
+          }
+        });
+        const data = await res.json();
+        const messages = data.record.messages || [];
+        messages.push({
+          nickname,
+          text: input.value,
+          time: timeString,
+          image: image
+        });
+        await saveMessages(messages);
+        renderMessages(messages);
+        input.value = "";
+        document.getElementById("imageInput").value = "";
+      }
+    }
+
+    fetchMessages();
+  </script>
+</body>
+</html>
