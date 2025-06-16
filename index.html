@@ -1,190 +1,71 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>我們的小天地</title>
+  <title>每日一句聖經經文</title>
   <style>
     body {
-      font-family: "Helvetica", sans-serif;
-      margin: 0;
-      padding: 0;
-      background: #fdfdfd;
+      font-family: 'Helvetica Neue', '微軟正黑體', sans-serif;
+      background-color: #f8f9fa;
       color: #333;
-    }
-    header {
-      background-color: #f7cfd6;
-      padding: 1em;
       text-align: center;
+      padding: 5rem 1rem;
     }
-    header h1 {
-      margin: 0;
-      font-size: 1.8em;
+    h1 {
+      font-weight: 300;
+      font-size: 2rem;
+      margin-bottom: 2rem;
     }
-    main {
-      padding: 1em;
-      display: none;
-    }
-    section {
-      margin-bottom: 2em;
-    }
-    textarea {
-      width: 100%;
-      height: 100px;
-      padding: 0.5em;
-      font-size: 1em;
-    }
-    input[type="file"] {
-      margin-top: 0.5em;
+    #verse-box {
+      background: #ffffff;
+      padding: 2rem;
+      margin-top: 2rem;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      border-radius: 1rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+      font-size: 1.25rem;
     }
     button {
-      padding: 0.5em 1em;
-      background-color: #f7cfd6;
+      padding: 0.8rem 2rem;
+      font-size: 1rem;
+      background-color: #4a90e2;
+      color: white;
       border: none;
-      font-size: 1em;
+      border-radius: 0.5rem;
       cursor: pointer;
-      margin-top: 0.5em;
     }
-    ul {
-      list-style: none;
-      padding: 0;
-    }
-    li {
-      background: #fff5f7;
-      border-radius: 5px;
-      padding: 0.5em;
-      margin-bottom: 0.5em;
-    }
-    .meta {
-      font-size: 0.8em;
-      color: #777;
-    }
-    img.uploaded {
-      max-width: 100%;
-      margin-top: 0.5em;
-      border-radius: 8px;
+    button:hover {
+      background-color: #357ab8;
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>我們的小天地</h1>
-    <p>只屬於我們的心情樹洞 🍃</p>
-  </header>
-  <main>
-    <section>
-      <h2>留言板</h2>
-      <textarea id="messageInput" placeholder="寫下你想說的話..."></textarea>
-      <br>
-      <input type="file" id="imageInput" accept="image/*">
-      <br>
-      <button onclick="addMessage()">送出留言</button>
-      <ul id="messageList"></ul>
-    </section>
-  </main>
+  <h1>📖 隨機聖經經文</h1>
+  <button onclick="showVerse()">抽一句</button>
+  <div id="verse-box">點上方按鈕，獲得一句來自上帝的話語</div>
 
   <script>
-    let password = sessionStorage.getItem("password");
-    if (password !== "960913") {
-      password = prompt("請輸入進入密碼：");
-      if (password === "960913") {
-        sessionStorage.setItem("password", password);
-      } else {
-        alert("密碼錯誤，請重新整理頁面再試一次。❌");
-        throw new Error("密碼錯誤");
-      }
+    const verses = [
+      "神愛世人，甚至將他的獨生子賜給他們。——約翰福音 3:16",
+      "你要專心仰賴耶和華，不可倚靠自己的聰明。——箴言 3:5",
+      "耶和華是我的牧者，我必不致缺乏。——詩篇 23:1",
+      "在患難之日，我要求告你，因你必應允我。——詩篇 86:7",
+      "我留下平安給你們，我將我的平安賜給你們。——約翰福音 14:27",
+      "萬事都互相效力，叫愛神的人得益處。——羅馬書 8:28",
+      "不要效法這個世界，只要心意更新而變化。——羅馬書 12:2",
+      "因信稱義，是本乎恩，也因著信。——以弗所書 2:8",
+      "要常常喜樂，不住地禱告，凡事謝恩。——帖撒羅尼迦前書 5:16-18",
+      "你不要害怕，因為我與你同在。——以賽亞書 41:10",
+      "你們中間誰願為大，就必作你們的用人。——馬太福音 20:26",
+      "耶穌說：我是道路、真理、生命。——約翰福音 14:6"
+    ];
+
+    function showVerse() {
+      const index = Math.floor(Math.random() * verses.length);
+      document.getElementById("verse-box").innerText = verses[index];
     }
-
-    let nickname = localStorage.getItem("nickname");
-    if (!nickname) {
-      nickname = prompt("歡迎進入我們的小天地！請輸入你的暱稱：");
-      if (!nickname || nickname.trim() === "") {
-        nickname = "匿名小花";
-      }
-      localStorage.setItem("nickname", nickname);
-    }
-
-    document.querySelector("main").style.display = "block";
-
-    const JSONBIN_ID = "68496c648960c979a5a80031";
-    const JSONBIN_SECRET = "$2a$10$s8owPj8J0CNAiaWhteg2uukcpYgfjQPMs7Zr4QXQU1kt4X3bxqLge";
-
-    async function fetchMessages() {
-      const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}/latest`, {
-        headers: {
-          'X-Master-Key': JSONBIN_SECRET
-        }
-      });
-      const data = await res.json();
-      renderMessages(data.record.messages || []);
-    }
-
-    async function saveMessages(messages) {
-      await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Master-Key": JSONBIN_SECRET
-        },
-        body: JSON.stringify({ messages })
-      });
-    }
-
-    function renderMessages(messages) {
-      const list = document.getElementById("messageList");
-      list.innerHTML = "";
-      messages.reverse().forEach(data => {
-        const li = document.createElement("li");
-        li.innerHTML = `
-          <strong>${data.nickname}</strong> 說：<br>
-          ${data.text}<br>
-          <div class="meta">🕒 ${data.time}</div>
-          ${data.image ? `<img class="uploaded" src="${data.image}" alt="圖片">` : ""}
-        `;
-        list.appendChild(li);
-      });
-    }
-
-    async function addMessage() {
-      const input = document.getElementById("messageInput");
-      const imageFile = document.getElementById("imageInput").files[0];
-      const now = new Date();
-      const timeString = now.toLocaleString("zh-TW", { hour12: false });
-      let imageURL = "";
-
-      if (imageFile) {
-        const reader = new FileReader();
-        reader.onloadend = async function () {
-          imageURL = reader.result;
-          await pushMessage(imageURL);
-        };
-        reader.readAsDataURL(imageFile);
-      } else {
-        await pushMessage(imageURL);
-      }
-
-      async function pushMessage(image) {
-        const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}/latest`, {
-          headers: {
-            'X-Master-Key': JSONBIN_SECRET
-          }
-        });
-        const data = await res.json();
-        const messages = data.record.messages || [];
-        messages.push({
-          nickname,
-          text: input.value,
-          time: timeString,
-          image: image
-        });
-        await saveMessages(messages);
-        renderMessages(messages);
-        input.value = "";
-        document.getElementById("imageInput").value = "";
-      }
-    }
-
-    fetchMessages();
   </script>
 </body>
 </html>
